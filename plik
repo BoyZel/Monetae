@@ -1,0 +1,7 @@
+function main{
+
+var x = 10;
+while(x<15){ 
+	x = x+3;
+	break;
+}
