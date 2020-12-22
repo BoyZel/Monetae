@@ -1,8 +1,10 @@
 #include "lexer.h"
 #include <cctype>
-Lexer::Lexer(std::shared_ptr<Reader> aReader) : reader(aReader)
+#include <fstream>
+#include <iostream>
+Lexer::Lexer(std::shared_ptr<Reader> aReader, std::string configName) : reader(aReader)
 {
-
+    readConfig(configName);
 }
 
 Token Lexer::getNextToken(){
@@ -21,9 +23,9 @@ Token Lexer::getNextToken(){
 
 void Lexer::ignoreWhitespaces()
 {
-    bool isComment = 0; // komentarze zle - czy musza byc?
+    bool isComment = 0;
     char tmp;
-    while((tmp = reader->getChar()) == ' ' || tmp == '/' || tmp == 10 || tmp == 13 || tmp ==9){
+    while((tmp = reader->getChar()) == ' ' || tmp == '/' || tmp == 10 || tmp == 13 || tmp ==9 || isComment){
         if(tmp == '/'){
             if(!isComment){
                 if(reader->peekChar() != '/')
@@ -36,6 +38,7 @@ void Lexer::ignoreWhitespaces()
             line++;
             position = 0;
             isComment = false;
+            continue;
         }
         position++;
     }
@@ -88,8 +91,14 @@ Token Lexer::getName()
     auto x = dictionary.keywords.find(token.text);
     if(x != dictionary.keywords.end())
         token.type = x->second;
-    else
-        token.type = TokenTypes::NAME;
+    else{
+    auto y = dictionary.currencies.find(token.text);
+        if(y != dictionary.currencies.end())
+            token.type = TokenTypes::CURRENCY;
+        else{
+            token.type = TokenTypes::NAME;
+        }
+    }
     return token;
 }
 
@@ -131,6 +140,32 @@ Token Lexer::getSingleOperator()
             token.type = TokenTypes::OTHER;
     }
     return token;
+}
+
+bool Lexer::readConfig(const std::string name)
+{
+    std::ifstream stream(name, std::ios::in | std::ios::binary);
+    if(!stream)
+        return false;
+    int numOfCurrencies;
+    stream>>numOfCurrencies;
+    for(int i=0; i<numOfCurrencies; i++){
+        std::string tmp;
+        stream>>tmp;
+        dictionary.currencies.emplace(tmp, i);
+    }
+    for(int i=0;i<numOfCurrencies;i++){
+        std::vector<std::pair<int,int>> exchange;
+        for(int j=0;j<numOfCurrencies;j++){
+            int preDot = 0, afterDot = 0;
+            stream>>preDot;
+            if(stream.get() == '.')
+                stream>>afterDot;
+            exchange.emplace_back(preDot, afterDot);
+        }
+        dictionary.exchanges.push_back(exchange);
+    }
+    return true;
 }
 
 Token Lexer::getNumber()

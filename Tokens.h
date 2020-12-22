@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <set>
+#include <vector>
 class Tokens{
 public:
     std::unordered_map<std::string, TokenTypes>keywords = {
@@ -46,6 +47,8 @@ public:
     std::set<char>dangerous = {
         '=', '!', '>', '<', '&', '|'
     };
+    std::unordered_map<std::string, int> currencies;
+    std::vector<std::vector<std::pair<int, int>>> exchanges;
 };
 
 #endif // TOKENS_H

@@ -8,9 +8,9 @@ class Lexer
 public:
     Tokens dictionary;
     std::shared_ptr<Reader> reader;
-    int line;
-    int position;
-    Lexer(std::shared_ptr<Reader>);
+    int line=0;
+    int position=0;
+    Lexer(std::shared_ptr<Reader>, std::string configName );
     Token getNextToken();
     void ignoreWhitespaces();
     Token getString();
@@ -18,6 +18,7 @@ public:
     Token getName();
     Token getDoubleChar();
     Token getSingleOperator();
+    bool readConfig(const std::string name);
 };
 
 #endif // LEXER_H

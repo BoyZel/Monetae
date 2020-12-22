@@ -16,7 +16,8 @@ enum class TokenTypes{
         FUNCTION, // function
         VAR, // variable
         RETURN, // return
-    	MAIN, //main
+        MAIN, //main
+        CURRENCY, //currency
     	
         LEFT_PARENTHESIS, // (
         RIGHT_PARENTHESIS, // )
