@@ -17,13 +17,13 @@ enum class TokenTypes{
         VAR, // variable
         RETURN, // return
         MAIN, //main
-        CURRENCY, //currency
     	
         LEFT_PARENTHESIS, // (
         RIGHT_PARENTHESIS, // )
         LEFT_BRACE, // {
         RIGHT_BRACE, // }
         COMMA, // ,
+        DOT,
         BREAK, // break
         CONTINUE, // continue
         ASSIGN, // =
@@ -34,6 +34,7 @@ enum class TokenTypes{
         EOFTOKEN, // end of file
         NAME, // name of variable/function
         ERROR_TOO_LONG,
+        WRONG,
         OTHER // anything else
 };
 

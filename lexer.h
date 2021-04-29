@@ -5,13 +5,14 @@
 #include "Tokens.h"
 class Lexer
 {
-public:
+private:
     Tokens dictionary;
     std::shared_ptr<Reader> reader;
-    int line=0;
-    int position=0;
-    Lexer(std::shared_ptr<Reader>, std::string configName );
+public:
+    static constexpr int maxLength = 200;
+    Lexer(std::shared_ptr<Reader>);
     Token getNextToken();
+    Token getNextTokenFromConfig();
     void ignoreWhitespaces();
     Token getString();
     Token getNumber();

@@ -7,9 +7,9 @@ public:
     std::string text;
     TokenTypes type;
     int line;
-    int position;
-    int beforeDot=0;
-    int afterDot=0;
+    int positionInLine;
+    int absolutePosition;
+    int value=0;
 };
 
 #endif // TOKEN_H

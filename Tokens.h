@@ -33,7 +33,8 @@ public:
         {'<', TokenTypes::COMPARE},
         {',', TokenTypes::COMMA},
         {';', TokenTypes::SEMICOLON},
-        {'!', TokenTypes::NEGATE}
+        {'!', TokenTypes::NEGATE},
+        {'.', TokenTypes::DOT}
     };
 
     std::unordered_map<std::string, TokenTypes>double_operators = {
