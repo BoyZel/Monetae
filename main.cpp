@@ -66,9 +66,8 @@ BOOST_AUTO_TEST_CASE( TestLeksera3 )
     }
     BOOST_CHECK( test[0].type == TokenTypes::NAME );
     BOOST_CHECK( test[1].text == "pln" );
-    BOOST_CHECK( test[2].value == 3 );
-    BOOST_CHECK( test[3].text == "." );
-    BOOST_CHECK( test[3].type == TokenTypes::DOT );
+    std::cout<<test[2].valueDouble<<std::endl;
+    BOOST_CHECK( test[2].valueDouble - 3.2500 < 1 );
 }
 
 BOOST_AUTO_TEST_CASE( TestLeksera4 )

@@ -2,6 +2,7 @@
 #include <cctype>
 #include <fstream>
 #include <iostream>
+#include <tgmath.h>
 Lexer::Lexer(std::shared_ptr<Reader> aReader) : reader(aReader)
 {
     //readConfig(configName);
@@ -203,11 +204,50 @@ Token Lexer::getNumber()
     token.positionInLine = reader->getPositionInLine();
     token.type = TokenTypes::NUMBER;
     token.value = single - '0';
+    if(token.value == 0){
+        if(isdigit(reader->peekChar()))
+        token.type = TokenTypes::WRONG;
+        return token;
+    }
     while(isdigit(single = reader->getChar())){
         token.value = token.value*10 + single - '0';
         if(token.value>200000000){
             token.type = TokenTypes::ERROR_TOO_LONG;
             return token;
+        }
+    }
+    if(single == '.'){
+        int count=10;
+        if(!isdigit(reader->peekChar())){
+            token.type = TokenTypes::WRONG;
+            return token;
+        }
+        token.valueDouble = token.value;
+        token.value = 0;
+        while(isdigit(single = reader->getChar())){
+            token.valueDouble += (double)(single - '0')/count;
+            count = count*10;
+        }
+    }
+    if(single == 'e' || single == 'E'){
+        if(!isdigit(reader->peekChar())){
+            token.type = TokenTypes::WRONG;
+            return token;
+        }
+        int exp = reader->getChar() - '0';
+        if(exp == 0){
+            if(isdigit(reader->peekChar())) //zakres
+                token.type = TokenTypes::WRONG;
+            return token;
+        }
+        while(isdigit(single = reader->getChar())){
+            exp = exp*10 + single - '0';
+        }
+        if(token.value == 0){
+            token.valueDouble = std::pow(token.valueDouble, exp);
+        }
+        else{
+            token.value = token.value^exp;
         }
     }
     reader->unget();

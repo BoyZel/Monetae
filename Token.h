@@ -10,6 +10,7 @@ public:
     int positionInLine;
     int absolutePosition;
     int value=0;
+    double valueDouble =0;
 };
 
 #endif // TOKEN_H
