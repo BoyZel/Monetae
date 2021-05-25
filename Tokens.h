@@ -49,7 +49,7 @@ public:
         '=', '!', '>', '<', '&', '|'
     };
     std::unordered_map<std::string, int> currencies;
-    std::vector<std::vector<std::pair<int, int>>> exchanges;
+    std::vector<std::vector<double>> exchanges;
 };
 
 #endif // TOKENS_H

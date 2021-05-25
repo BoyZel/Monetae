@@ -5,6 +5,7 @@
 #include "syntax_objects/vardeclaration.h"
 #include "syntax_objects/assignment.h"
 #include "syntax_objects/return.h"
+#include <iostream> //do usuniecia
 Parser::Parser()
 {
 
@@ -22,7 +23,10 @@ void Parser::parseProgram()
                 parsingProgram->addFunctionDef(std::move(functionDef));
                 continue;
             }
-        parsingProgram->addVarDeclaration(parseVarDefinition());
+        auto definition = parseVarDefinition();
+        if(definition == nullptr)
+            return;
+        parsingProgram->addVarDeclaration(std::move(definition));
     }
 }
 
@@ -42,9 +46,11 @@ std::unique_ptr<FunctionDef> Parser::parseFunctionDef()
     nextToken();
     if(token.type != TokenTypes::LEFT_PARENTHESIS)
         throw std::runtime_error("Unexpected token");
+    nextToken();
     auto params = parseParameters();
     if(token.type != TokenTypes::RIGHT_PARENTHESIS)
         throw std::runtime_error("Unexpected token");
+    nextToken();
     auto block = parseStatementBlock();
     return std::make_unique<FunctionDef>(std::make_unique<Token>(ident), std::move(params), std::move(block));
 }
@@ -133,7 +139,7 @@ std::unique_ptr<Instruction> Parser::parseIfElse()
         throw std::runtime_error("Unexpected token");
     nextToken();
     auto ifStatement = parseStatementBlock();
-    if(token.type!=TokenTypes::ELSE){
+    if(token.type==TokenTypes::ELSE){
         nextToken();
         auto block = parseStatementBlock();
         return std::make_unique<IfElse>(std::move(logicalExp), std::move(ifStatement), std::move(block));
@@ -154,14 +160,26 @@ std::unique_ptr<Instruction> Parser::parseVarDefinition()
         throw std::runtime_error("Unexpected token");
     nextToken();
     auto addOperation = parseAddOperation();
-    if(addOperation!=nullptr)
+    if(addOperation!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<VarDeclaration>(std::move(name), std::move(addOperation));
+    }
     auto funCall = parseFunctionCall();
-    if(funCall!=nullptr)
+    if(funCall!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<VarDeclaration>(std::move(name), std::move(funCall));
+    }
     auto logicalExp = parseLogicalExpression();
-    if(logicalExp!=nullptr)
+    if(logicalExp!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<VarDeclaration>(std::move(name), std::move(logicalExp));
+    }
     throw std::runtime_error("Unexpected token");
 }
 
@@ -170,19 +188,31 @@ std::unique_ptr<Instruction> Parser::parseAssignment()
     if(token.type!=TokenTypes::NAME)
         return nullptr;
     auto name = std::make_unique<Token>(token);
-    nextToken();
+    nextToken();//problem
     if(token.type!=TokenTypes::ASSIGN)
         return nullptr;
     nextToken();
     auto addOperation = parseAddOperation();
-    if(addOperation!=nullptr)
+    if(addOperation!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<Assignment>(std::move(name), std::move(addOperation));
+    }
     auto funCall = parseFunctionCall();
-    if(funCall!=nullptr)
+    if(funCall!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<Assignment>(std::move(name), std::move(funCall));
+    }
     auto logicalExp = parseLogicalExpression();
-    if(logicalExp!=nullptr)
+    if(logicalExp!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<Assignment>(std::move(name), std::move(logicalExp));
+    }
     throw std::runtime_error("Unexpected token");
 }
 
@@ -192,15 +222,26 @@ std::unique_ptr<Instruction> Parser::parseReturn()
         return nullptr;
     nextToken();
     auto addOperation = parseAddOperation();
-    if(addOperation!=nullptr)
+    if(addOperation!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<Return>(std::move(addOperation));
+    }
     auto funCall = parseFunctionCall();
-    if(funCall!=nullptr)
+    if(funCall!=nullptr){
+        if(token.type != TokenTypes::SEMICOLON)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return std::make_unique<Return>(std::move(funCall));
+    }
     auto logicalExp = parseLogicalExpression();
-    if(logicalExp!=nullptr)
-        return std::make_unique<Return>(std::move(logicalExp));
-    throw std::runtime_error("Unexpected token");
+    if(logicalExp==nullptr)
+        throw std::runtime_error("Unexpected token");
+    if(token.type != TokenTypes::SEMICOLON)
+        throw std::runtime_error("Unexpected token");
+    nextToken();
+    return std::make_unique<Return>(std::move(logicalExp));
 }
 
 std::unique_ptr<Argument> Parser::parseArgument()
@@ -227,8 +268,12 @@ std::unique_ptr<Instruction> Parser::parseFunctionCall()
         return nullptr;
     nextToken();
     auto argument = parseArgument();
-    if(argument == nullptr)
+    if(argument == nullptr){
+        if(token.type!=TokenTypes::RIGHT_PARENTHESIS)
+            throw std::runtime_error("Unexpected token");
+        nextToken();
         return functionCall;
+    }
     while(token.type == TokenTypes::COMMA){
         nextToken();
         auto argument = parseArgument();
@@ -236,6 +281,9 @@ std::unique_ptr<Instruction> Parser::parseFunctionCall()
             throw std::runtime_error("Unexpected token");
         functionCall->addArgument(std::move(argument));
     }
+    if(token.type!=TokenTypes::RIGHT_PARENTHESIS)
+        throw std::runtime_error("Unexpected token");
+    nextToken();
     return functionCall;
 }
 
@@ -251,7 +299,6 @@ std::unique_ptr<LogicalExpression> Parser::parseLogicalExpression()
         return nullptr;
     std::unique_ptr<LogicalExpression> logicalExpression(new LogicalExpression(std::move(expression)));
     logicalExpression->setNegation(l_negation);
-    nextToken();
     while(token.type == TokenTypes::AND || token.type == TokenTypes::OR){
         logicalExpression->addLogicalOp(std::make_unique<Token>(token));
         nextToken();
@@ -259,7 +306,6 @@ std::unique_ptr<LogicalExpression> Parser::parseLogicalExpression()
         if(logicalExpression == nullptr)
             throw std::runtime_error("Unexpected token");
         logicalExpression->addLogicalExpression(std::move(l_logicalExpression));
-        nextToken();
     }
     return logicalExpression;
 }
@@ -268,7 +314,6 @@ std::unique_ptr<Expression> Parser::parseExpression()
 {
     auto l_add_operation1 = parseAddOperation();
     if(l_add_operation1 != nullptr){
-        nextToken();
         if(token.type != TokenTypes::COMPARE)
             throw std::runtime_error("Unexpected token");
         std::unique_ptr<Token> l_operator(new Token(token));
@@ -281,7 +326,6 @@ std::unique_ptr<Expression> Parser::parseExpression()
     auto logExp = parseLogicalExpression();
     if(logExp == nullptr)
         return nullptr;
-    nextToken();
     return std::unique_ptr<Expression>(new Expression(std::move(logExp)));
 }
 
@@ -291,7 +335,6 @@ std::unique_ptr<AddOperation> Parser::parseAddOperation()
     if(multiOp == nullptr)
         return nullptr;
     std::unique_ptr<AddOperation> addOp(new AddOperation(std::move(multiOp)));
-    nextToken();
     while(token.type == TokenTypes::ADD){
         addOp->addAddOperator(std::make_unique<Token>(token));
         nextToken();
@@ -299,7 +342,6 @@ std::unique_ptr<AddOperation> Parser::parseAddOperation()
         if(addOper == nullptr)
             throw std::runtime_error("Unexpected token");
         addOp->addAddOperation(std::move(addOper));
-        nextToken();
     }
     return addOp;
 }
@@ -310,7 +352,6 @@ std::unique_ptr<MultiOperation> Parser::parseMultiOperation()
     if(factor == nullptr)
         return nullptr;
     std::unique_ptr<MultiOperation> multiOp(new MultiOperation(std::move(factor)));
-    nextToken();
     while(token.type == TokenTypes::MULTIPLY){
         multiOp->addMultiOperator(std::make_unique<Token>(token));
         nextToken();
@@ -347,6 +388,7 @@ std::unique_ptr<Factor> Parser::parseFactor()
         nextToken();
         auto factor = std::make_unique<Factor>(std::make_unique<Token>(l_token));
         factor->setMinus(minus);
+        return factor;
     }
     if(token.type != TokenTypes::LEFT_PARENTHESIS)
         return nullptr;
@@ -359,4 +401,30 @@ std::unique_ptr<Factor> Parser::parseFactor()
         throw std::runtime_error("Unexpected token");
     nextToken();
     return factor;
+}
+
+void Parser::nextConfigToken(){
+    token = lexer->getNextTokenFromConfig();
+}
+
+void Parser::parseConfig(){
+    int index = 0;
+    while(token.type == TokenTypes::NAME){
+        currencies.emplace(token.text, index);
+        index++;
+        nextConfigToken();
+    }
+    for(int i=0;i<index;i++){
+        std::vector<double> ex;
+        for(int j=0;j<index;j++){
+            if(token.type != TokenTypes::NUMBER)
+                throw std::runtime_error("Unexpected token");
+            if(token.value != 0)
+                ex.push_back(token.value);
+            else
+                ex.push_back(token.valueDouble);
+            nextConfigToken();
+        }
+        exchanges.push_back(ex);
+    }
 }

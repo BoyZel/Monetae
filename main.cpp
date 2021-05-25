@@ -6,6 +6,7 @@
 #include <vector>
 #include "reader.h"
 #include "lexer.h"
+#include "parser.h"
 
 BOOST_AUTO_TEST_CASE( Test1 )
 {
@@ -86,4 +87,67 @@ BOOST_AUTO_TEST_CASE( TestLeksera4 )
     BOOST_CHECK( test[1].text == ")" );
     BOOST_CHECK( test[2].text == "<=" );
     BOOST_CHECK( test[3].text == "||" );
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera1 )
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera2)
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8;}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera3)
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; x=y+9;}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera4)
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2;}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera5)
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2; if(a>b){}}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera6)
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2; if(a>b){} while(c>=10){}}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
+}
+
+BOOST_AUTO_TEST_CASE( TestParsera7)
+{
+    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2; if(a>b){} while(c>=10){}}");
+    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    auto parser = Parser(std::move(lexer));
+    BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
