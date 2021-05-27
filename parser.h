@@ -17,6 +17,8 @@ public:
     void parseProgram();
     void nextToken();
     void nextConfigToken();
+    Token peekNextToken();
+    void setToken(Token a_token);
     void parseConfig();
     std::unique_ptr<FunctionDef> parseFunctionDef();
     std::unique_ptr<Parameters> parseParameters();
@@ -25,10 +27,10 @@ public:
     std::unique_ptr<Instruction> parseWhileLoop();
     std::unique_ptr<Instruction> parseIfElse();
     std::unique_ptr<Instruction> parseVarDefinition();
-    std::unique_ptr<Instruction> parseAssignment();
+    std::unique_ptr<Instruction> parseAssignment(Token identifier);
     std::unique_ptr<Instruction> parseReturn();
     std::unique_ptr<Argument> parseArgument();
-    std::unique_ptr<Instruction> parseFunctionCall();
+    std::unique_ptr<Instruction> parseFunctionCall(Token identifier);
     std::unique_ptr<LogicalExpression> parseLogicalExpression();
     std::unique_ptr<Expression> parseExpression();
     std::unique_ptr<AddOperation> parseAddOperation();
