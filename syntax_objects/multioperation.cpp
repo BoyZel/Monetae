@@ -8,7 +8,7 @@ MultiOperation::MultiOperation()
 MultiOperation::MultiOperation(std::unique_ptr<Factor> factor)
     :factor(std::move(factor)){}
 
-void MultiOperation::addMultiOperator(std::unique_ptr<Token> next)
+void MultiOperation::addMultiOperator(std::unique_ptr<std::string> next)
 {
     multiOps.push_back(std::move(next));
 }

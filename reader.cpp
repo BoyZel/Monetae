@@ -4,9 +4,9 @@ int Reader::getLine() const
     return line;
 }
 
-int Reader::getAbsolutePosition() const
+int Reader::tellg() const
 {
-    return absolutePosition;
+    return stream.tellg();
 }
 
 int Reader::getPositionInLine() const
@@ -20,25 +20,28 @@ void Reader::setNewLine()
    positionInLine = 0;
 }
 
-Reader::Reader(std::shared_ptr<std::istream> istream) : stream(istream)
+Reader::Reader(std::istream &istream) : stream(istream)
 {
 }
 
 char Reader::getChar()
 {
-    absolutePosition++;
     positionInLine++;
-    return stream->get();
+    char tmp = stream.get();
+    if(tmp == 10){
+        line++;
+        positionInLine = 0;
+    }
+    return tmp;
 }
 
 char Reader::peekChar()
 {
-    return stream->peek();
+    return stream.peek();
 }
 
 void Reader::unget()
 {
-    absolutePosition--;
     positionInLine--;
-    stream->unget();
+    stream.unget();
 }

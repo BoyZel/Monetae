@@ -2,6 +2,8 @@
 #define INSTRUCTION_H
 
 #include "logicalexpression.h"
+
+class Interpreter;
 class Instruction
 {
     enum class InstructionType{
@@ -16,6 +18,7 @@ class Instruction
 
 public:
     Instruction();
+    void accept(Interpreter visitor);
 };
 
 #endif // INSTRUCTION_H

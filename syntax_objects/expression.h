@@ -1,19 +1,18 @@
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
-#include "addoperation.h"
-#include "logicalexpression.h"
-
-class LogicalExpression;
+#include "primaryexpression.h"
+class AddOperation;
+class PrimaryExpression;
+class Interpreter;
 class Expression
 {
-    std::unique_ptr<AddOperation> addOperation1;
-    std::unique_ptr<Token> compareOp;
-    std::unique_ptr<AddOperation> addOperation2;
-    std::unique_ptr<LogicalExpression> logicalExpression; //or this
+    std::unique_ptr<PrimaryExpression> primaryExpression1;
+    std::unique_ptr<std::string> compareOp;
+    std::unique_ptr<PrimaryExpression> primaryExpression2;
 public:
     Expression();
-    Expression(std::unique_ptr<AddOperation> addOperation1, std::unique_ptr<Token> compareOp, std::unique_ptr<AddOperation> addOperation2);
-    Expression(std::unique_ptr<LogicalExpression> logicalExpression);
+    Expression(std::unique_ptr<PrimaryExpression> primaryExpression1, std::unique_ptr<std::string> compareOp, std::unique_ptr<PrimaryExpression> primaryExpresion2);
+    void accept(Interpreter visitor);
 };
 
 #endif // EXPRESSION_H

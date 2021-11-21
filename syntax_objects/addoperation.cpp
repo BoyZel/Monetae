@@ -8,7 +8,7 @@ AddOperation::AddOperation()
 AddOperation::AddOperation(std::unique_ptr<MultiOperation> multiOperation)
     :multiOperation(std::move(multiOperation)){}
 
-void AddOperation::addAddOperator(std::unique_ptr<Token> next)
+void AddOperation::addAddOperator(std::unique_ptr<std::string> next)
 {
     additiveOps.push_back(std::move(next));
 }

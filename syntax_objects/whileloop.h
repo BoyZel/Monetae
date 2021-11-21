@@ -11,6 +11,7 @@ class WhileLoop : public Instruction
 public:
     WhileLoop(std::unique_ptr<LogicalExpression> expression, std::unique_ptr<StatementBlock> block);
     WhileLoop();
+    void accept(Interpreter visitor);
 };
 
 #endif // WHILELOOP_H

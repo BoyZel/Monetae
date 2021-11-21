@@ -1,23 +1,25 @@
 #ifndef LOGICALEXPRESSION_H
 #define LOGICALEXPRESSION_H
-
+#include <memory>
+#include <vector>
 #include <Token.h>
 #include "expression.h"
 
 class Expression;
+class Interpreter;
+
 
 class LogicalExpression
 {
-    bool negation;
     std::unique_ptr<Expression> expression;
-    std::vector<std::unique_ptr<Token>> logicalOps;
-    std::vector<std::unique_ptr<LogicalExpression>> logicalExpressions;
+    std::vector<std::unique_ptr<std::string>> logicalOps;
+    std::vector<std::unique_ptr<Expression>> expressions;
 public:
     LogicalExpression();
     LogicalExpression(std::unique_ptr<Expression> expression);
-    void addLogicalOp(std::unique_ptr<Token> next);
-    void addLogicalExpression(std::unique_ptr<LogicalExpression> next);
-    void setNegation(bool value);
+    void addLogicalOp(std::unique_ptr<std::string> next);
+    void addExpression(std::unique_ptr<Expression> next);
+    void accept(Interpreter visitor);
 };
 
 #endif // LOGICALEXPRESSION_H

@@ -3,43 +3,44 @@
 #include <fstream>
 #include <iostream>
 #include <tgmath.h>
-Lexer::Lexer(std::shared_ptr<Reader> aReader) : reader(aReader)
+Lexer::Lexer(std::unique_ptr<Reader> aReader) : reader(std::move(aReader))
 {
     //readConfig(configName);
 }
 
 Token Lexer::getNextToken(){
-    ignoreWhitespaces();
+    ignoreWhitespacesAndComments();
+    lockPosition();
     Token token;
     token = getString();
-    if(token.type != TokenTypes::WRONG)
+    if(token.type.has_value())
         return token;
     token = getNumber();
-    if(token.type != TokenTypes::WRONG)
+    if(token.type.has_value())
         return token;
     token = getName();
-    if(token.type != TokenTypes::WRONG)
+    if(token.type.has_value())
         return token;
     token = getDoubleChar();
-    if(token.type != TokenTypes::WRONG)
+    if(token.type.has_value())
         return token;
     return getSingleOperator();
 }
 
 Token Lexer::getNextTokenFromConfig()
 {
-    ignoreWhitespaces();
+    ignoreWhitespacesAndComments();
     Token token;
     token = getNumber();
-    if(token.type != TokenTypes::WRONG)
+    if(token.type.has_value())
         return token;
     token = getName();
-    if(token.type != TokenTypes::WRONG)
+    if(token.type.has_value())
         return token;
     return getSingleOperator();
 }
 
-void Lexer::ignoreWhitespaces()
+void Lexer::ignoreWhitespacesAndComments()
 {
     bool isComment = 0;
     char tmp;
@@ -56,7 +57,6 @@ void Lexer::ignoreWhitespaces()
             }
         }
         if(tmp == 10){
-            reader->setNewLine();
             isComment = false;
             continue;
         }
@@ -66,15 +66,11 @@ void Lexer::ignoreWhitespaces()
 Token Lexer::getString()
 {
     Token token;
-    if(reader->peekChar() != '"'){
-        token.type = TokenTypes::WRONG;
+    if(reader->peekChar() != '"')
         return token;
-    }
     char single;
     reader.get();
-    token.line = reader->getLine();
-    token.absolutePosition = reader->getAbsolutePosition();
-    token.positionInLine = reader->getPositionInLine();
+    setPosition(token);
     token.type = TokenTypes::STRING;
     if(reader->peekChar() == '"')
         return token;
@@ -86,9 +82,6 @@ Token Lexer::getString()
         if(single == '"' && token.text.back() != '\\')
             return token;
         token.text.push_back(single);
-        if(single == 10){
-            reader->setNewLine();
-        }
     }
     reader->unget();
     return token;
@@ -98,13 +91,9 @@ Token Lexer::getName()
 {
     Token token;
     char single = reader->peekChar();
-    if(! (isalpha(single) || single == '_')){
-        token.type = TokenTypes::WRONG;
+    if(! (isalpha(single) || single == '_'))
         return token;
-    }
-    token.line = reader->getLine();
-    token.absolutePosition = reader->getAbsolutePosition();
-    token.positionInLine = reader->getPositionInLine();
+    setPosition(token);
     while(isalpha(single = reader->getChar()) || single == '_'){
         if(token.text.size()>maxLength){
             token.type = TokenTypes::ERROR_TOO_LONG;
@@ -124,13 +113,9 @@ Token Lexer::getName()
 Token Lexer::getDoubleChar()
 {
     Token token;
-    if(!dictionary.dangerous.count(reader->peekChar())){
-        token.type = TokenTypes::WRONG;
+    if(!dictionary.dangerous.count(reader->peekChar()))
         return token;
-    }
-    token.line = reader->getLine();
-    token.absolutePosition = reader->getAbsolutePosition();
-    token.positionInLine = reader->getPositionInLine();
+    setPosition(token);
     token.text.push_back(reader->getChar());
     token.text.push_back(reader->getChar());
     auto x = dictionary.double_operators.find(token.text);
@@ -148,9 +133,7 @@ Token Lexer::getDoubleChar()
 Token Lexer::getSingleOperator()
 {
     Token token;
-    token.line = reader->getLine();
-    token.absolutePosition = reader->getAbsolutePosition();
-    token.positionInLine = reader->getPositionInLine();
+    setPosition(token);
     token.text.push_back(reader->getChar());
     auto y = dictionary.single_operators.find(token.text[0]);
     if(y != dictionary.single_operators.end())
@@ -162,6 +145,20 @@ Token Lexer::getSingleOperator()
             token.type = TokenTypes::OTHER;
     }
     return token;
+}
+
+void Lexer::lockPosition()
+{
+    tokenLine = reader->getLine();
+    tokenAbsolutePosition = reader->tellg();
+    tokenPositionInLine = reader->getPositionInLine();
+}
+
+void Lexer::setPosition(Token &token)
+{
+    token.line = tokenLine;
+    token.absolutePosition = tokenAbsolutePosition;
+    token.positionInLine = tokenPositionInLine;
 }
 /*
 bool Lexer::readConfig(const std::string name)
@@ -194,19 +191,15 @@ bool Lexer::readConfig(const std::string name)
 Token Lexer::getNumber()
 {
     Token token;
-    if(!isdigit(reader->peekChar())){
-        token.type = TokenTypes::WRONG;
+    if(!isdigit(reader->peekChar()))
         return token;
-    }
     char single = reader->getChar();
-    token.line = reader->getLine();
-    token.absolutePosition = reader->getAbsolutePosition();
-    token.positionInLine = reader->getPositionInLine();
-    token.type = TokenTypes::NUMBER;
+    setPosition(token);
     token.value = single - '0';
     if(token.value == 0){
+        token.type = TokenTypes::NUMBER;
         if(isdigit(reader->peekChar()))
-        token.type = TokenTypes::WRONG;
+            token.type.reset();
         return token;
     }
     while(isdigit(single = reader->getChar())){
@@ -219,7 +212,6 @@ Token Lexer::getNumber()
     if(single == '.'){
         int count=10;
         if(!isdigit(reader->peekChar())){
-            token.type = TokenTypes::WRONG;
             return token;
         }
         token.valueDouble = token.value;
@@ -230,14 +222,13 @@ Token Lexer::getNumber()
         }
     }
     if(single == 'e' || single == 'E'){
-        if(!isdigit(reader->peekChar())){
-            token.type = TokenTypes::WRONG;
+        if(!isdigit(reader->peekChar()))
             return token;
-        }
         int exp = reader->getChar() - '0';
         if(exp == 0){
+            token.type = TokenTypes::NUMBER;
             if(isdigit(reader->peekChar())) //zakres
-                token.type = TokenTypes::WRONG;
+                token.type.reset();
             return token;
         }
         while(isdigit(single = reader->getChar())){
@@ -251,5 +242,6 @@ Token Lexer::getNumber()
         }
     }
     reader->unget();
+    token.type = TokenTypes::NUMBER;
     return token;
 }

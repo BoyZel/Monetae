@@ -7,18 +7,23 @@ class Lexer
 {
 private:
     Tokens dictionary;
-    std::shared_ptr<Reader> reader;
+    std::unique_ptr<Reader> reader;
+    int tokenPositionInLine;
+    int tokenLine;
+    int tokenAbsolutePosition;
 public:
     static constexpr int maxLength = 200;
-    Lexer(std::shared_ptr<Reader>);
+    Lexer(std::unique_ptr<Reader>);
     Token getNextToken();
     Token getNextTokenFromConfig();
-    void ignoreWhitespaces();
+    void ignoreWhitespacesAndComments();
     Token getString();
     Token getNumber();
     Token getName();
     Token getDoubleChar();
     Token getSingleOperator();
+    void lockPosition();
+    void setPosition(Token &token);
     bool readConfig(const std::string name);
 };
 

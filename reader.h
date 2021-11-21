@@ -9,13 +9,13 @@ private:
     int absolutePosition = 0;
     int line = 0;
 public:
-    std::shared_ptr<std::istream> stream;
-    Reader(std::shared_ptr<std::istream>);
+    std::istream &stream;
+    Reader(std::istream &);
     char getChar();
     char peekChar();
     void unget();
     int getLine() const;
-    int getAbsolutePosition() const;
+    int tellg() const;
     int getPositionInLine() const;
     void setNewLine();
 };

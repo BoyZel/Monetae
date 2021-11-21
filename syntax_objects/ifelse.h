@@ -11,6 +11,7 @@ public:
     IfElse();
     IfElse(std::unique_ptr<LogicalExpression> expression, std::unique_ptr<StatementBlock> block);
     IfElse(std::unique_ptr<LogicalExpression> expression, std::unique_ptr<StatementBlock> block, std::unique_ptr<StatementBlock> elseBlock);
+    void accept(Interpreter visitor);
 };
 
 #endif // IFELSE_H

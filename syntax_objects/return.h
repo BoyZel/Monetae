@@ -16,6 +16,7 @@ public:
     Return(std::unique_ptr<AddOperation> addOperation);
     Return(std::unique_ptr<Instruction> functionCall);
     Return(std::unique_ptr<LogicalExpression> logicalExpression);
+    void accept(Interpreter visitor);
 };
 
 #endif // RETURN_H

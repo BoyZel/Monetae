@@ -10,9 +10,9 @@
 
 BOOST_AUTO_TEST_CASE( Test1 )
 {
-    std::shared_ptr<std::ifstream> stream = std::make_shared<std::ifstream>("test1", std::ios::in | std::ios::binary);
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    Lexer lexer(reader);
+    std::ifstream stream("test1", std::ios::in | std::ios::binary);
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    Lexer lexer(std::move(reader));
     Token x;
     std::vector<Token> test;
     x = lexer.getNextToken();
@@ -31,9 +31,9 @@ BOOST_AUTO_TEST_CASE( Test1 )
 
 BOOST_AUTO_TEST_CASE( TestLeksera2 )
 {
-    std::shared_ptr<std::ifstream> stream = std::make_shared<std::ifstream>("test2", std::ios::in | std::ios::binary);
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    Lexer lexer(reader);
+    std::ifstream stream("test2", std::ios::in | std::ios::binary);
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    Lexer lexer(std::move(reader));
     Token x;
     std::vector<Token> test;
     x = lexer.getNextToken();
@@ -55,9 +55,9 @@ BOOST_AUTO_TEST_CASE( TestLeksera2 )
 
 BOOST_AUTO_TEST_CASE( TestLeksera3 )
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("rabarbar pln 3.2500");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    Lexer lexer(reader);
+    std::stringstream stream("rabarbar pln 3.2500");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    Lexer lexer(std::move(reader));
     Token x;
     std::vector<Token> test;
     x = lexer.getNextTokenFromConfig();
@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE( TestLeksera3 )
 
 BOOST_AUTO_TEST_CASE( TestLeksera4 )
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("() <= ||");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    Lexer lexer(reader);
+    std::stringstream stream("() <= ||");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    Lexer lexer(std::move(reader));
     Token x;
     std::vector<Token> test;
     x = lexer.getNextToken();
@@ -90,63 +90,63 @@ BOOST_AUTO_TEST_CASE( TestLeksera4 )
 
 BOOST_AUTO_TEST_CASE( TestParsera1 )
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream("function a(){}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
 
 BOOST_AUTO_TEST_CASE( TestParsera2)
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8;}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream("function a(){var p = 8;}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
 
 BOOST_AUTO_TEST_CASE( TestParsera3)
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; x=y+9;}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream("function a(){var p = 8; x=y+9;}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
 
 BOOST_AUTO_TEST_CASE( TestParsera4)
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2;}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream("function a(){var p = 8; p=p+9; return 2+2;}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
 
 BOOST_AUTO_TEST_CASE( TestParsera5)
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2; if(a>b){}}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream ("function a(){var p = 8; p=p+9; return 2+2; if(a>b){}}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
 
 BOOST_AUTO_TEST_CASE( TestParsera6)
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2; if(a>b){} while(c>=10){}}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream("function a(){var p = 8; p=p+9; return 2+2; if(a>b){} while(c>=10){}}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }
 
 BOOST_AUTO_TEST_CASE( TestParsera7)
 {
-    std::shared_ptr<std::stringstream> stream = std::make_shared<std::stringstream>("function a(){var p = 8; p=p+9; return 2+2; if(a>b){} while(c>=10){}}");
-    std::shared_ptr<Reader> reader = std::make_shared<Reader>(stream);
-    std::unique_ptr<Lexer> lexer(new Lexer(reader));
+    std::stringstream stream("function a(){var p = 8; p=p+9; return 2+2; if(a>b){} while(c>=10){}}");
+    std::unique_ptr<Reader> reader = std::make_unique<Reader>(stream);
+    std::unique_ptr<Lexer> lexer(new Lexer(std::move(reader)));
     auto parser = Parser(std::move(lexer));
     BOOST_CHECK_NO_THROW(parser.parseProgram());
 }

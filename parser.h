@@ -13,7 +13,6 @@ class Parser
 public:
     Parser();
     Parser(std::unique_ptr<Lexer> lexer);
-
     void parseProgram();
     void nextToken();
     void nextConfigToken();
@@ -33,9 +32,12 @@ public:
     std::unique_ptr<Instruction> parseFunctionCall(Token identifier);
     std::unique_ptr<LogicalExpression> parseLogicalExpression();
     std::unique_ptr<Expression> parseExpression();
+    std::unique_ptr<PrimaryExpression> parsePrimaryExpression();
     std::unique_ptr<AddOperation> parseAddOperation();
     std::unique_ptr<MultiOperation> parseMultiOperation();
     std::unique_ptr<Factor> parseFactor();
+    void forceTokenTypeAndGetNext(TokenTypes);
+    void forceTokenType(TokenTypes);
 };
 
 #endif // PARSER_H
