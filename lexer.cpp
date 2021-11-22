@@ -196,7 +196,7 @@ Token Lexer::getNumber()
     char single = reader->getChar();
     setPosition(token);
     token.value = single - '0';
-    if(token.value == 0){
+    if(token.value == 0 && reader->peekChar()!='.'){
         token.type = TokenTypes::NUMBER;
         if(isdigit(reader->peekChar()))
             token.type.reset();
